@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "composeLaunchAction": "LaunchBrowser",
+      "composeLaunchServiceName": "bookapi",
+      "composeLaunchUrl": "{Scheme}://localhost:{ServicePort}/api/book",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "bookapi": "StartDebugging",
+        "bookplatform": "StartDebugging",
+        "bookplatform.aiapi": "StartDebugging"
+      }
+    }
+  }
+}

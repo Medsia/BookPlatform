@@ -1,0 +1,136 @@
+﻿@page
+@model BookPlatform.Pages.AIModel
+@{
+    ViewData["Title"] = "AI";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+<h2>Generate AI Content</h2>
+
+<div id="form-container">
+    <form id="ai-form" method="post">
+        <div>
+            <input type="checkbox" id="search-books" name="search-books" value="search-books" checked>Find a book by description
+        </div>
+        <div>
+            <label for="Message">Message:</label>
+            <textarea id="Message" name="Message" cols="50" rows="5"></textarea>
+        </div>
+        <button type="submit">Generate Content</button>
+    </form>
+</div>
+<div id="spinner" class="spinner" style="display: none;"></div>
+<div id="result-container"></div>
+
+@section Scripts {
+    <script>
+        $(function() {
+            $('#ai-form').submit(function(event) {
+                event.preventDefault();
+                var url = '/AI';
+
+                var userRequestModel = {
+                    message: document.getElementById('Message').value,
+                };
+
+                if ($('#search-books').is(':checked')) {
+                    userRequestModel.message = 'find a book by description: ' + userRequestModel.message;
+                }
+
+                var $button = $(this).find('button[type="submit"]');
+                $button.attr('disabled', true);
+                $('#result-container').html('<div class="spinner"></div>');
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    contentType: 'application/json',
+                    data: JSON.stringify(userRequestModel),
+                    success: function(result) {
+                        $('#result-container').html('');
+                        var parsedResult = JSON.parse(result);
+                        if (parsedResult.Success) {
+                            var contentHtml = '';
+                            for (var i = 0; i < parsedResult.Content.length; i++) {
+                                contentHtml += '<p>' + parsedResult.Content[i] + '</p>';
+                            }
+                            $('#result-container').html(contentHtml);
+                        } else {
+                            $('#result-container').html('Failed to generate content.');
+                        }
+                    },
+                    error: function() {
+                        alert('Failed to generate content.');
+                    },
+                    complete: function() {
+                        $button.attr('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+    }
+    <style>
+        #form-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        textarea {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button[type="submit"] {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #result-container {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        @@keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner {
+            border: 0.2em solid rgba(0, 0, 0, 0.1);
+            border-top: 0.2em solid #767676;
+            border-radius: 50%;
+            width: 2em;
+            height: 2em;
+            animation: spin 1s linear infinite;
+            margin: 1em auto;
+        }
+    </style>

@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  bookplatform:
+    image: ${DOCKER_REGISTRY-}bookplatform
+    build:
+      context: .
+      dockerfile: BookPlatform/Dockerfile
+
+  bookapi:
+    image: ${DOCKER_REGISTRY-}bookapi
+    build:
+      context: .
+      dockerfile: BookAPI/Dockerfile
+
+  bookplatform.aiapi:
+    image: ${DOCKER_REGISTRY-}bookplatformaiapi
+    build:
+      context: .
+      dockerfile: OpenAIAPI/Dockerfile
+

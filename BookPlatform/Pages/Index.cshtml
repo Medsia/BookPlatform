@@ -1,0 +1,223 @@
+﻿@page
+
+@{
+    ViewData["Title"] = "Home page";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+</div>
+<div id="add-book-form" style="text-align:center">
+    <form>
+        <label for="title">Title:</label>
+        <input type="text" id="title" required>
+
+        <label for="author">Author:</label>
+        <input type="text" id="author" required>
+
+        <label for="publicationYear">Publication Year:</label>
+        <input type="number" id="publicationYear" required>
+
+        <label for="genre">Genre:</label>
+        <input type="text" id="genre" required>
+
+        <button type="submit" onclick="addBook()">Add Book</button>
+    </form>
+</div>
+<table id="bookTable">
+</table>
+@section scripts{
+    <script>
+        function renderTable(data) {
+            var table = document.createElement('table');
+            var thead = document.createElement('thead');
+            var tbody = document.createElement('tbody');
+            var fields = Object.keys(data[0]);
+
+            // Creating Column Headers
+            var tr = document.createElement('tr');
+            for (var i = 0; i < fields.length; i++) {
+                var th = document.createElement('th');
+                th.appendChild(document.createTextNode(fields[i]));
+                tr.appendChild(th);
+            }
+            var thEdit = document.createElement('th');
+            thEdit.appendChild(document.createTextNode('Edit'));
+            tr.appendChild(thEdit);
+            var thDelete = document.createElement('th');
+            thDelete.appendChild(document.createTextNode('Delete'));
+            tr.appendChild(thDelete);
+            thead.appendChild(tr);
+            table.appendChild(thead);
+
+            // Creating Table Rows
+            for (var i = 0; i < data.length; i++) {
+                var tr = document.createElement('tr');
+                for (var j = 0; j < fields.length; j++) {
+                    var td = document.createElement('td');
+                    td.appendChild(document.createTextNode(data[i][fields[j]]));
+                    tr.appendChild(td);
+                }
+
+                // Adding an Edit Button
+                var tdEdit = document.createElement('td');
+                var buttonEdit = document.createElement('button');
+                buttonEdit.innerHTML = 'Edit';
+                buttonEdit.onclick = (function(book) {
+                    return function() {
+                        editBook(book);
+                    };
+                })(data[i]);
+                tdEdit.appendChild(buttonEdit);
+                tr.appendChild(tdEdit);
+
+                // Adding a delete button
+                var tdDelete = document.createElement('td');
+                var deleteButton = document.createElement('button');
+                deleteButton.innerHTML = 'Delete';
+                deleteButton.onclick = (function(book) {
+                    return function() {
+                        deleteBook(book);
+                    };
+                })(data[i]);
+                tdDelete.appendChild(deleteButton);
+                tr.appendChild(tdDelete);
+
+                tbody.appendChild(tr);
+            }
+
+            table.appendChild(tbody);
+
+            return table;
+        }
+
+        function editBook(book) {
+            // Get the row of the table that needs to be changed
+            var tr = event.target.closest('tr');
+
+            // Replacing text cells with input
+            var fields = Object.keys(book);
+            for (var i = 0; i < fields.length; i++) {
+                var td = tr.cells[i];
+                var input = document.createElement('input');
+                input.type = 'text';
+                input.value = book[fields[i]];
+                td.innerHTML = '';
+                td.appendChild(input);
+            }
+
+            // Replace the "Edit" button with the "Save" and "Cancel" buttons
+            var tdEdit = tr.cells[fields.length];
+            var saveButton = document.createElement('button');
+            saveButton.innerHTML = 'Save';
+            saveButton.onclick = function() {
+                // Collecting data from input
+                var updatedBook = {};
+                for (var i = 0; i < fields.length; i++) {
+                    var td = tr.cells[i];
+                    var input = td.querySelector('input');
+                    updatedBook[fields[i]] = input.value;
+                }
+                updateBook(updatedBook);
+            };
+            var cancelButton = document.createElement('button');
+            cancelButton.innerHTML = 'Cancel';
+            cancelButton.onclick = function() {
+                // updating the page
+                location.reload();
+            };
+            tdEdit.innerHTML = '';
+            tdEdit.appendChild(saveButton);
+            tdEdit.appendChild(cancelButton);
+        }
+
+        function deleteBook(book) {
+            if (confirm('Are you sure you want to delete this book?')) {
+                $.ajax({
+                    url: 'https://localhost:44309/api/book/' + book.id,
+                    type: 'DELETE',
+                    success: function(result) {
+                        // Deleted successfully, updating the table
+                        location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert('Failed to delete book.');
+                    }
+                });
+            }
+        }
+
+        function updateBook(updatedBook) {
+            event.preventDefault();
+            // Getting data from the form
+            $.ajax({
+                url: 'https://localhost:44309/api/book/' + updatedBook.id,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedBook),
+                success: function(result) {
+                    // updating the page
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    alert('Failed to update book.');
+                }
+            });
+        }
+        function addBook() {
+            event.preventDefault();
+            // Getting data from the form
+            var book = {
+                title: document.querySelector('#title').value,
+                author: document.querySelector('#author').value,
+                publicationYear: document.querySelector('#publicationYear').value,
+                genre: document.querySelector('#genre').value
+            };
+
+            // Sending data to the server
+            $.ajax({
+                url: 'https://localhost:44309/api/book',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(book),
+                success: function(result) {
+                    // Added successfully, updating the page
+                    location.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                    alert('Failed to add book.');
+                }
+            });
+        }
+
+        fetch('https://localhost:44309/api/book')
+            .then(response => response.json())
+            .then(data => {
+                var table = renderTable(data);
+                document.getElementById('bookTable').appendChild(table);
+            })
+            .catch(error => console.error(error));
+    </script>
+    }
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+    </style>
