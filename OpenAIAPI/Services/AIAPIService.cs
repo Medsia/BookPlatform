@@ -2,6 +2,7 @@
 using BookPlatform.AIAPI.Models;
 using Microsoft.Extensions.Configuration;
 using OpenAI_API;
+using System.Text;
 
 namespace BookPlatform.AIAPI.Services
 {
@@ -16,7 +17,7 @@ namespace BookPlatform.AIAPI.Services
 
         public async Task<List<string>> GenerateContent(AIGenerateRequestModel generateRequestModel)
         {
-            var apiKey = _configuration.GetSection("Appsettings:GChatAPIKEY").Value;
+            var apiKey = Encoding.UTF8.GetString(Convert.FromBase64String(_configuration.GetSection("Appsettings:GChatAPIKEY").Value));
             var apiModel = _configuration.GetSection("Appsettings:Model").Value;
             List<string> rq = new List<string>();
             string rs = "";

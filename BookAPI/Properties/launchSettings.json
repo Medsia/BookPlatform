@@ -12,10 +12,10 @@
     "BookAPI": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "api/book",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "launchUrl": "api/book",
       "applicationUrl": "https://localhost:7029;http://localhost:5029",
       "dotnetRunMessages": true
     },
@@ -33,6 +33,16 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/api/book",
       "publishAllPorts": true,
       "useSSL": true
+    },
+    "WSL": {
+      "commandName": "WSL2",
+      "launchBrowser": true,
+      "launchUrl": "https://localhost:7029/api/book",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "https://localhost:7029;http://localhost:5029"
+      },
+      "distributionName": ""
     }
   }
 }
