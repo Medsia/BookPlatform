@@ -42,31 +42,5 @@ namespace BookPlatform.AIAPI.Controllers
             }
 
         }
-
-        public async Task<ActionResult<AIResponseModel>> GenerateAIContent(string MQRoutingKey)
-        {
-            try
-            {
-                var message = _messageBrokerService.ReceiveMessage(MQRoutingKey, _configuration.GetSection("MQsettings:IncomingAIQueueName").Value);
-                var JSONMessage = (UserRequestModel)JsonConvert.DeserializeObject(message);
-
-                var response = await _AIService.GenerateAIContent(JSONMessage);
-
-                var JSONResponse = JsonConvert.SerializeObject(response);
-                _messageBrokerService.SendMessage(JSONResponse, MQRoutingKey, _configuration.GetSection("MQsettings:OutgoingAIQueueName").Value);
-
-                return response;
-            }
-            catch (System.Exception ex)
-            {
-
-                var response = new AIResponseModel();
-                response.Success = false;
-                response.Content.Add(ex.Message);
-
-                return response;
-            }
-
-        }
     }
 }
